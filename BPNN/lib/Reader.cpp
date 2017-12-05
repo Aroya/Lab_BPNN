@@ -6,8 +6,14 @@
 #include"Reader.h"
 using namespace std;
 
+static const char processedFile[] = "process.tmp";
+static const char transformedFile[] = "transform.tmp";
+
+//将数据中的日期分开
+static void dataprocess(const char*);
 //将文件逗号转换为空格 返回每行的元素数
 static int transform(const char*);
+
 
 static int alreadyTest = 0;
 
@@ -22,7 +28,7 @@ Reader::Reader(const char*filename) {
 	string sst;
 
 	ifstream fin;
-	fin.open("transform.tmp");
+	fin.open(transformedFile);
 
 	if(fin.is_open()){
 		while (fin.good() && fin >> sst) {
@@ -61,7 +67,7 @@ static int transform(const char* t) {
 	ofstream fout;
 	ifstream fin;
 	fin.open(t);
-	fout.open("transform.tmp");
+	fout.open(transformedFile);
 	if (fin.is_open() && fout.is_open()) {
 		char reading;
 		bool first = 1;
@@ -118,4 +124,9 @@ double Reader::persents(double* t, bool display) {
 		//cout << "F1:" << f1 << endl;
 	}
 	return accurary;
+}
+
+static void dataprocess(const char*) {
+	ofstream fout;
+	ifstream fin;
 }
