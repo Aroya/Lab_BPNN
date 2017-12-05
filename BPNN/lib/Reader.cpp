@@ -6,12 +6,15 @@
 #include"Reader.h"
 using namespace std;
 
-static const char processedFile[] = "process.tmp";
+static const char processedDate[] = "processDate.tmp";
 static const char transformedFile[] = "transform.tmp";
+static const char firstLineDeleted[] = "delete.tmp";
 
 //将数据中的日期分开
-static void dataprocess(const char*);
-//将文件逗号转换为空格 返回每行的元素数
+static void dateprocess(const char*);
+//直接删除首行
+static void deleteFirstLine(const char*);
+//将文件逗号和'/'转换为空格 返回每行的元素数
 static int transform(const char*);
 
 
@@ -24,11 +27,15 @@ Reader::Reader(const char*filename) {
 	double this_scalar;
 	int this_column = 0;
 	int this_row = -1;
-	columns = transform(filename);
+
+	//dateprocess(filename);
+	deleteFirstLine(filename);
+	columns = transform(firstLineDeleted);
 	string sst;
 
 	ifstream fin;
 	fin.open(transformedFile);
+
 
 	if(fin.is_open()){
 		while (fin.good() && fin >> sst) {
@@ -72,7 +79,7 @@ static int transform(const char* t) {
 		char reading;
 		bool first = 1;
 		while (fin.good() && (reading=fin.get()) != -1) {
-			if (reading == ',') {
+			if (reading == ','||reading=='/') {
 				fout << ' ';
 				if (first)ans++;
 			}
@@ -126,7 +133,48 @@ double Reader::persents(double* t, bool display) {
 	return accurary;
 }
 
-static void dataprocess(const char*) {
+static void dateprocess(const char*t) {
 	ofstream fout;
 	ifstream fin;
+	fin.open(t);
+	fout.open(processedDate);
+	if (!fin.is_open()) {
+		cout << "Cannot open" << processedDate << endl;
+		system("pause");
+	}
+	if (!fout.is_open()) {
+		cout << "Cannot open" << t << endl;
+		system("pause");
+	}
+	string buffer;
+	fin >> buffer;
+	//instant,dteday
+	//instant,d,m,dy
+	buffer[8] = 'y';
+	buffer[9] = ',';
+	buffer[10] = 'm';
+	buffer[11] = ',';
+	buffer[12] = 'd';
+	fout << buffer;
+	while (fin >> buffer)fout << buffer;
+	fout.close();
+}
+=
+static void deleteFirstLine(const char*t) {
+	ofstream fout;
+	ifstream fin;
+	fin.open(t);
+	fout.open(processedDate);
+	if (!fin.is_open()) {
+		cout << "Cannot open" << processedDate << endl;
+		system("pause");
+	}
+	if (!fout.is_open()) {
+		cout << "Cannot open" << t << endl;
+		system("pause");
+	}
+	string buffer;
+	fin >> buffer;
+	while (fin >> buffer)fout << buffer;
+	fout.close();
 }
