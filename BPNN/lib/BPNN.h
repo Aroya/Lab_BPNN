@@ -33,6 +33,8 @@ private:
 	double **fixBias;
 	//learing rate
 	double rate;
+	//after update learn from the data
+	void learn();
 public:
 	//contain input,hidden and output
 	BPNN(const int&CountOfLayers);
@@ -49,7 +51,8 @@ public:
 	//input expect value(output node)
 	void setExpectData(const double*&Data);
 	//run with group data
-	void runGroup(const double**&groupData,const int&groups);
+	void runGroup(const double**&groupData, const double**&flag, const int&groups,
+		double(*)(const double&) = defaultActive, double(*)(const double&) = defaultActiveD);
 	//set learning rate
 	void setRate(const double&t) { rate = t; }
 };

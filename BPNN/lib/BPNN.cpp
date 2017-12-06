@@ -144,10 +144,14 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 		//this function process one train
 	}
 }
-void BPNN::runGroup(const double**&group, const int&groups) {
+void BPNN::runGroup(const double**&group, const double**&flag,const int&groups,
+	double(*active)(const double&), double(*activeD)(const double&)) {
 	clearData();
 	for (int i = 0; i < groups; i++) {
 		setInputData(group[i]);
-		updateLayers();
+		updateLayers(active);
+		setExpectData(flag[0]);
+		updateParameter(activeD);
+
 	}
 }
