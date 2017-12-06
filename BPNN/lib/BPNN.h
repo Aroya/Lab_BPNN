@@ -1,6 +1,11 @@
 #ifndef AROYA_BPNN
 #define AROYA_BPNN
 
+
+double defaultActive(const double&t);
+double defaultActiveD(const double&t);
+double sigmoid(const double&t);
+double sigmoidD(const double&t);
 //first use BPNN to init
 //second use setInputData to init inputArray
 //then use setLayerNodes to init LayerArray
@@ -56,5 +61,7 @@ public:
 	//set learning rate
 	void setRate(const double&t) { rate = t; }
 };
+
+
 
 #endif

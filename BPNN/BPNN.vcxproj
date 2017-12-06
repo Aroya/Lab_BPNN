@@ -111,7 +111,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lib\BPNN.cpp" />
+    <ClCompile Include="lib\Divider.cpp" />
+    <ClCompile Include="lib\LR.cpp" />
+    <ClCompile Include="lib\Reader.cpp" />
     <ClCompile Include="Source.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lib\BPNN.h" />
+    <ClInclude Include="lib\Divider.h" />
+    <ClInclude Include="lib\LR.h" />
+    <ClInclude Include="lib\Reader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
