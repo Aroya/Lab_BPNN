@@ -203,7 +203,7 @@ void dateprocess(const char*t,const char*out) {
 	buffer[11] = ',';
 	buffer[12] = 'd';
 	fout << buffer;
-	while (fin >> buffer)fout << buffer;
+	while (fin >> buffer)fout << buffer << endl;
 	fout.close();
 }
 
@@ -213,15 +213,15 @@ void deleteFirstLine(const char*t,const char*out) {
 	fin.open(t);
 	fout.open(out);
 	if (!fin.is_open()) {
-		cout << "Cannot open" << processedDate << endl;
+		cout << "Cannot open" << t << endl;
 		system("pause");
 	}
 	if (!fout.is_open()) {
-		cout << "Cannot open" << t << endl;
+		cout << "Cannot open" << out << endl;
 		system("pause");
 	}
 	string buffer;
 	fin >> buffer;
-	while (fin >> buffer)fout << buffer;
+	while (fin >> buffer)fout << buffer << endl;
 	fout.close();
 }

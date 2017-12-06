@@ -4,13 +4,24 @@
 #include"lib\BPNN.h"
 using namespace std;
 void main() {
-	//file分割
-	//Divider("BPNN_Dataset\\origin.csv");
 	//删除首行
-	deleteFirstLine("train.csv", "train1.csv");
-	deleteFirstLine("validation.csv", "vali1.csv");
+	//deleteFirstLine("BPNN_Dataset\\train.csv","dfl.csv");
+	//deleteFirstLine("BPNN_Dataset\\test.csv", "dfl2.csv");
+	//file分割
+	//Divider("dfl.csv");
 	//删除空格
-	int trainCols=transform("")
+	int trainCols = transform("train.csv","tra.csv");
+	int valiCols = transform("validation.csv", "vali.csv");
+	//int testCols = transform("dfl2.csv", "test.csv");
+	Reader train("tra.csv", trainCols);
+	Reader vali("vali.csv", valiCols);
+
+	//build bpnn
+	int layers = 4;
+	BPNN bpnn(layers);
+	bpnn.setInputNodes(trainCols);
+	bpnn.setLayerNodes(new int[] {trainCols, trainCols, 1});
+
 
 
 	//last line
