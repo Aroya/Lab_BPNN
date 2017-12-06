@@ -136,10 +136,11 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 			}
 		}
 		//average X_i after all train
-		//for (l = 0; l < nodesReader2; l++) {
-		//	expected[k][l] /= double(nodesReader);
-		//}
-		//learning
+		//fr the layer before
+		for (l = 0; l < nodesReader2; l++) {
+			expected[k][l] /= double(nodesReader);
+		}
+		//learning W_i and bias
 		//after run all train
 		//this function process one train
 	}
@@ -152,6 +153,22 @@ void BPNN::runGroup(const double**&group, const double**&flag,const int&groups,
 		updateLayers(active);
 		setExpectData(flag[0]);
 		updateParameter(activeD);
+	}
+	learn(groups);
+}
+void BPNN::learn(const int&groups) {
+	int i, j, k, l, nodesReader, nodesReader2;
+	for (i = 1, k = 0; i < layers; i++) {
+		nodesReader = layerNodes[i];
+		nodesReader2 = layerNodes[k];
 
+		for (k = 0; k < nodesReader; k++) {
+			//bias
+			bias[i][k] += (rate*fixBias[i][k] / groups);
+			//W_i
+			for (l = 0; l < nodesReader2; l++) {
+				layerW[i][k][l] += (rate*fixW[i][k][l] / groups);
+			}
+		}
 	}
 }

@@ -10,12 +10,12 @@ static const char processedDate[] = "processDate.tmp";
 static const char transformedFile[] = "transform.tmp";
 static const char firstLineDeleted[] = "delete.tmp";
 
-//将数据中的日期分开
-static void dateprocess(const char*);
-//直接删除首行
-static void deleteFirstLine(const char*);
-//将文件逗号和'/'转换为空格 返回每行的元素数
-static int transform(const char*);
+////将数据中的日期分开
+//void dateprocess(const char*);
+////直接删除首行
+//void deleteFirstLine(const char*);
+////将文件逗号和'/'转换为空格 返回每行的元素数
+//int transform(const char*);
 
 
 static int alreadyTest = 0;
@@ -29,8 +29,8 @@ Reader::Reader(const char*filename) {
 	int this_row = -1;
 
 	//dateprocess(filename);
-	deleteFirstLine(filename);
-	columns = transform(firstLineDeleted);
+	deleteFirstLine(filename,firstLineDeleted);
+	columns = transform(firstLineDeleted,transformedFile);
 	string sst;
 
 	ifstream fin;
@@ -69,12 +69,59 @@ Reader::Reader(const char*filename) {
 }
 
 
-static int transform(const char* t) {
+Reader::Reader(const char*filename,const int&cols) {
+	double *temp;
+	//for reading
+	int this_flag;
+	double this_scalar;
+	int this_column = 0;
+	int this_row = -1;
+
+	columns = cols;
+	string sst;
+
+	ifstream fin;
+	fin.open(filename);
+
+
+	if (fin.is_open()) {
+		while (fin.good() && fin >> sst) {
+			if (this_column == 0) {
+				temp = new double[columns];
+				data.push_back(temp);
+				this_row++;
+				data[this_row][this_column++] = 1.0;
+				stringstream ss(sst);
+				ss >> this_scalar;
+				data[this_row][this_column++] = this_scalar;
+			}
+			else if (this_column < columns) {
+				stringstream ss(sst);
+				ss >> this_scalar;
+				data[this_row][this_column++] = this_scalar;
+			}
+			else {
+				this_column = 0;
+				stringstream ss(sst);
+				ss >> this_flag;
+				flag.push_back(this_flag);
+			}
+		}
+	}
+	else {
+		cout << "Reader cannot open file!\n";
+		system("pause");
+	}
+	rows = data.size();
+}
+
+
+int transform(const char* t,const char*out) {
 	int ans = 0;
 	ofstream fout;
 	ifstream fin;
 	fin.open(t);
-	fout.open(transformedFile);
+	fout.open(out);
 	if (fin.is_open() && fout.is_open()) {
 		char reading;
 		bool first = 1;
@@ -133,11 +180,11 @@ double Reader::persents(double* t, bool display) {
 	return accurary;
 }
 
-static void dateprocess(const char*t) {
+void dateprocess(const char*t,const char*out) {
 	ofstream fout;
 	ifstream fin;
 	fin.open(t);
-	fout.open(processedDate);
+	fout.open(out);
 	if (!fin.is_open()) {
 		cout << "Cannot open" << processedDate << endl;
 		system("pause");
@@ -159,12 +206,12 @@ static void dateprocess(const char*t) {
 	while (fin >> buffer)fout << buffer;
 	fout.close();
 }
-=
-static void deleteFirstLine(const char*t) {
+
+void deleteFirstLine(const char*t,const char*out) {
 	ofstream fout;
 	ifstream fin;
 	fin.open(t);
-	fout.open(processedDate);
+	fout.open(out);
 	if (!fin.is_open()) {
 		cout << "Cannot open" << processedDate << endl;
 		system("pause");

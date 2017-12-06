@@ -34,7 +34,7 @@ private:
 	//learing rate
 	double rate;
 	//after update learn from the data
-	void learn();
+	void learn(const int&groups);
 public:
 	//contain input,hidden and output
 	BPNN(const int&CountOfLayers);
