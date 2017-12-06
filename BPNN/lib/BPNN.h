@@ -19,12 +19,20 @@ private:
 	//for caculate Y=WX
 	//also the X_i for next layer
 	double **layerData;
+	//after activation function
+	double **activation;
 	//bias
 	double **bias;
 	//write 0 to layerData
 	void clearData();
 	//record expected value
 	double **expected;
+	//expect fixed value of W
+	double ***fixW;
+	//expect fixed value of bias
+	double **fixBias;
+	//learing rate
+	double rate;
 public:
 	//contain input,hidden and output
 	BPNN(const int&CountOfLayers);
@@ -32,14 +40,18 @@ public:
 	void setInputNodes(const int&Nodes);
 	//copy input data to first index of private data
 	void setInputData(const double*&NodeDataArray);
-	//set layer array size
+	//set layer array size(not contain input)
 	void setLayerNodes(const int*&Nodes);
 	//Get Ans
-	void updateLayers();
+	void updateLayers(double(*)(const double&) = defaultActive);
 	//Update W and bias
-	void updateParameter();
+	void updateParameter(double(*)(const double&) = defaultActiveD);
 	//input expect value(output node)
 	void setExpectData(const double*&Data);
+	//run with group data
+	void runGroup(const double**&groupData,const int&groups);
+	//set learning rate
+	void setRate(const double&t) { rate = t; }
 };
 
 #endif
