@@ -21,6 +21,10 @@ private:
 	double **layerData;
 	//bias
 	double **bias;
+	//write 0 to layerData
+	void clearData();
+	//record expected value
+	double **expected;
 public:
 	//contain input,hidden and output
 	BPNN(const int&CountOfLayers);
@@ -31,9 +35,11 @@ public:
 	//set layer array size
 	void setLayerNodes(const int*&Nodes);
 	//Get Ans
-	void updateAns();
+	void updateLayers();
 	//Update W and bias
 	void updateParameter();
+	//input expect value(output node)
+	void setExpectData(const double*&Data);
 };
 
 #endif
