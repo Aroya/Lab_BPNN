@@ -13,6 +13,9 @@ public:
 	vector<int>flag;
 	double persents(double*, bool display = 0);
 	int columns, rows;
+	//Normalization
+	void normalization();
+	void writeFile(const char*);
 };
 
 //将数据中的日期分开

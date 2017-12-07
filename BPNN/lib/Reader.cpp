@@ -77,7 +77,7 @@ Reader::Reader(const char*filename,const int&cols) {
 	int this_column = 0;
 	int this_row = -1;
 
-	columns = cols;
+	columns = cols - 1;
 	string sst;
 
 	ifstream fin;
@@ -90,7 +90,7 @@ Reader::Reader(const char*filename,const int&cols) {
 				temp = new double[columns];
 				data.push_back(temp);
 				this_row++;
-				data[this_row][this_column++] = 1.0;
+				//data[this_row][this_column++] = 1.0;
 				stringstream ss(sst);
 				ss >> this_scalar;
 				data[this_row][this_column++] = this_scalar;
@@ -223,5 +223,48 @@ void deleteFirstLine(const char*t,const char*out) {
 	string buffer;
 	fin >> buffer;
 	while (fin >> buffer)fout << buffer << endl;
+	fout.close();
+}
+
+void Reader::normalization() {
+	double max, min, rate;
+	bool counterUp,counterDown;
+	for (int i = 0; i < columns; i++) {
+		max = data[0][i];
+		min = data[0][i];
+		counterUp = true;
+		counterDown = true;
+		//judge
+		for (int j = 1, k = 0; j < rows; j++, k++) {
+			if (counterUp&&data[j][i] < data[k][i])counterUp = false;
+			if (counterDown&&data[j][i] > data[k][i])counterDown = false;
+			if (data[j][i] > max)max = data[j][i];
+			if (data[j][i] < min)min = data[j][i];
+		}
+		
+		//process
+		//all same value
+		if (min == max||counterUp||counterDown) {
+			for (int j = 0; j < rows; j++)data[j][i] = 0;
+		}
+		else {
+			rate = (max - min) / 2;
+			min += rate;
+			for (int j = 0; j < rows; j++)data[j][i] = (data[j][i] - min) / rate;
+		}
+	}
+}
+
+void Reader::writeFile(const char*t) {
+	ofstream fout;
+	fout.open(t);
+	int i, j;
+	for (i = 0; i < rows; i++) {
+		fout << data[i][0];
+		for (j = 0; j < columns; j++) {
+			fout << ','<<data[i][j];
+		}
+		fout << endl;
+	}
 	fout.close();
 }

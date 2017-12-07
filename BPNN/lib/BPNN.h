@@ -51,7 +51,7 @@ public:
 	//set input array size
 	void setInputNodes(const int&Nodes);
 	//copy input data to first index of private data
-	void setInputData(double* NodeDataArray);
+	void setInputData(double* NodeDataArray, double(*)(const double&));
 	//set layer array size(not contain input)
 	void setLayerNodes(int* Nodes);
 	//Get Ans
@@ -62,7 +62,8 @@ public:
 	void setExpectData(double*Data,double(*)(const double&));
 	//run with group data
 	void runGroup(double**groupData, double**flag, const int&groups,
-		double(*)(const double&) = defaultActive, double(*)(const double&) = defaultActiveD);
+		double(*)(const double&) = defaultActive, double(*)(const double&) = defaultActiveD,
+		bool writeFileTest=0);
 	//set learning rate
 	void setRate(const double&t) { rate = t; }
 };

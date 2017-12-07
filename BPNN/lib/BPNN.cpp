@@ -1,12 +1,21 @@
 #include"BPNN.h"
 #include<iostream>
+#include<fstream>
 #include<cmath>
 using namespace std;
 
+static double instant = 10;
+
 double defaultActive(const double&t) { return t; }
 double defaultActiveD(const double&t) { return 1.0; }
-double sigmoid(const double&t) { return 1.0 / (1.0 + exp(-t)); }
-double sigmoidD(const double&t) { return 1.0 / (2.0 + exp(t) + exp(-t)); }
+double sigmoid(const double&t) { return 1.0 / (1.0 + exp(-t/instant)); }
+double sigmoidD(const double&t) { 
+	//double v = t;
+	//if (v > 2)v = 2;
+	//if (v < 2)v = -2;
+	
+	return 1.0 / (2.0 + exp(t/instant) + exp(-t/instant));
+}
 
 BPNN::BPNN(const int&Layers) {
 	layers = Layers;
@@ -69,10 +78,11 @@ void BPNN::setLayerNodes(int*Nodes) {
 		}
 	}
 }
-void BPNN::setInputData(double*Data) {
+void BPNN::setInputData(double*Data, double(*active)(const double&)) {
 	int nodesReader = layerNodes[0];
 	for (int i = 0; i < nodesReader; i++) {
 		//layerData[0][i] = Data[i];
+		//activation[0][i] = active(Data[i]);
 		activation[0][i] = Data[i];
 	}
 }
@@ -81,7 +91,7 @@ void BPNN::clearData() {
 	int i, j, k, p, q, m;
 	for (i = 1, p = 0; i < layers; i++, p++) {
 		j = layerNodes[i];
-		m = layerNodes[j];
+		m = layerNodes[p];
 		for (k = 0; k < j; k++) {
 			//layerData[i][k] = 0;
 			expected[i][k] = 0;
@@ -108,6 +118,7 @@ void BPNN::updateLayers(double(*active)(const double&)) {
 			//bias
 			sum += bias[i][k];
 			layerData[i][k] = sum;
+			//if (i == layers - 1)system("pause");
 			activation[i][k] = active(sum);
 		}
 	}
@@ -116,7 +127,7 @@ void BPNN::setExpectData(double* Data,double(*active)(const double&)) {
 	int i = layers - 1;
 	int j = layerNodes[i];
 	for (int k = 0; k < j; k++) {
-		expected[i][k] = active(Data[k]);
+		expected[i][k] = active(Data[k]) - activation[i][k];
 	}
 }
 void BPNN::updateParameter(double(*activeD)(const double&)) {
@@ -131,18 +142,17 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 		}
 		for (j = 0; j < nodesReader; j++) {
 			//bias
-			biasDiff = 2.0 * (expected[i][j] - activation[i][j])*activeD(layerData[i][j]);
+			//biasDiff = 2.0 * (expected[i][j] - activation[i][j])*activeD(layerData[i][j]);
+			biasDiff = 2.0 * expected[i][j]*activeD(layerData[i][j]);
+			//cout << activation[i][j] << '\t' << activeD(layerData[i][j]) << endl;
 			fixBias[i][j] += biasDiff;
 			//W_i & X_i
 			for (l = 0; l < nodesReader2; l++) {
 				fixW[i][j][l] += biasDiff*activation[k][l];
+				
 				expected[k][l] += biasDiff*layerW[i][j][l];
+				//cout << fixW[i][j][l] << ' ' << expected[k][l] << endl;
 			}
-		}
-		//average X_i after all train
-		//fr the layer before
-		for (l = 0; l < nodesReader2; l++) {
-			expected[k][l] /= double(nodesReader);
 		}
 		//learning W_i and bias
 		//after run all train
@@ -150,28 +160,47 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 	}
 }
 void BPNN::runGroup(double**group, double**flag,const int&groups,
-	double(*active)(const double&), double(*activeD)(const double&)) {
-	clearData();
-	loss = 0;
-	forward = 0;
-	for (int i = 0; i < groups; i++) {
-		setInputData(group[i]);
-		updateLayers(active);
-		setExpectData(flag[i],active);
-		updateParameter(activeD);
-		for (int j = 0; j < layerNodes[layers - 1]; j++) {
-			forward += flag[i][j] - layerData[layers - 1][j];
-			loss += pow(flag[i][j] - layerData[layers - 1][j], 2);
+	double(*active)(const double&), double(*activeD)(const double&),
+	bool writeFile) {
+	if (!writeFile) {
+		clearData();
+		loss = 0;
+		forward = 0;
+		for (int i = 0; i < groups; i++) {
+			setInputData(group[i],active);
+			//for (int d = 0; d < layerNodes[0]; d++) {
+			//	cout << layerData[0][d] << '\t' << activation[0][d] << endl;
+			//}
+			updateLayers(active);
+			setExpectData(flag[i], active);
+			updateParameter(activeD);
+			for (int j = 0; j < layerNodes[layers - 1]; j++) {
+				forward += flag[i][j] - layerData[layers - 1][j];
+				loss += pow(flag[i][j] - layerData[layers - 1][j], 2);
+			}
 		}
+		cout << loss / double(groups) << endl;
+		learn(groups);
 	}
-	cout << loss/double(groups) << endl;
-	learn(groups);
+	else {
+		ofstream fout;
+		fout.open("result.file");
+		clearData();
+		for (int i = 0; i < groups; i++) {
+			setInputData(group[i],active);
+			updateLayers(active);
+			for (int i = 0; i < layerNodes[layers - 1]; i++) {
+				fout << layerData[layers - 1][i] << endl;
+			}
+		}
+		fout.close();
+	}
 }
 void BPNN::learn(const int&groups) {
-	int i, k, l, nodesReader, nodesReader2;
-	for (i = 1, k = 0; i < layers; i++) {
+	int i, j, k, l, nodesReader, nodesReader2;
+	for (i = 1, j = 0; i < layers; i++, j++) {
 		nodesReader = layerNodes[i];
-		nodesReader2 = layerNodes[k];
+		nodesReader2 = layerNodes[j];
 
 		for (k = 0; k < nodesReader; k++) {
 			//bias
@@ -184,8 +213,10 @@ void BPNN::learn(const int&groups) {
 	}
 }
 double BPNN::dynamicRate() {
-	if(forward>0)return 1/ (1 + exp(-loss));
+	return 1;
+	if(forward>0)return 1 / (1 + exp(-loss));
 	else return -1 / (1 + exp(-loss));
+	
 	//return forward / 100;
 	//return 100;
 }
