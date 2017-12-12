@@ -5,6 +5,7 @@
 using namespace std;
 
 static double instant = 10;
+static double lastLayerK = 10;
 
 double defaultActive(const double&t) { return t; }
 double defaultActiveD(const double&t) { return 1.0; }
