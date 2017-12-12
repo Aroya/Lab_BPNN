@@ -14,7 +14,7 @@ public:
 	double persents(double*, bool display = 0);
 	int columns, rows;
 	//Normalization
-	void normalization();
+	void normalization(int code=0);
 	void writeFile(const char*);
 };
 

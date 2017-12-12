@@ -4,8 +4,8 @@
 #include<cmath>
 using namespace std;
 
-static double instant = 10;
-static double lastLayerK = 10;
+static double instant = 50;
+static double lastLayerK = 1;
 
 double defaultActive(const double&t) { return t; }
 double defaultActiveD(const double&t) { return 1.0; }
@@ -123,12 +123,18 @@ void BPNN::updateLayers(double(*active)(const double&)) {
 			activation[i][k] = active(sum);
 		}
 	}
+	//×îºóÒ»²ã
+	i = layers - 1;
+	nodeReader = layerNodes[i];
+	for (j = 0; j < nodeReader; j++) {
+		activation[i][j] = lastLayerK*layerData[i][j];
+	}
 }
 void BPNN::setExpectData(double* Data,double(*active)(const double&)) {
 	int i = layers - 1;
 	int j = layerNodes[i];
 	for (int k = 0; k < j; k++) {
-		expected[i][k] = active(Data[k]) - activation[i][k];
+		expected[i][k] = Data[k] - activation[i][k];
 	}
 }
 void BPNN::updateParameter(double(*activeD)(const double&)) {
@@ -144,7 +150,10 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 		for (j = 0; j < nodesReader; j++) {
 			//bias
 			//biasDiff = 2.0 * (expected[i][j] - activation[i][j])*activeD(layerData[i][j]);
-			biasDiff = 2.0 * expected[i][j]*activeD(layerData[i][j]);
+			if (i == layers - 1) {
+				biasDiff = 2.0 * expected[i][j] * lastLayerK* layerData[i][j];
+			}
+			else biasDiff = 2.0 * expected[i][j]*activeD(layerData[i][j]);
 			//cout << activation[i][j] << '\t' << activeD(layerData[i][j]) << endl;
 			fixBias[i][j] += biasDiff;
 			//W_i & X_i
@@ -214,9 +223,9 @@ void BPNN::learn(const int&groups) {
 	}
 }
 double BPNN::dynamicRate() {
-	return 1;
-	if(forward>0)return 1 / (1 + exp(-loss));
-	else return -1 / (1 + exp(-loss));
+	return 0.0001;
+	//if(forward>0)return 0.00005 / (1 + exp(-loss));
+	//else return -0.00005 / (1 + exp(-loss));
 	
 	//return forward / 100;
 	//return 100;

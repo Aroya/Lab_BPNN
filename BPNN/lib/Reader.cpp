@@ -226,33 +226,60 @@ void deleteFirstLine(const char*t,const char*out) {
 	fout.close();
 }
 
-void Reader::normalization() {
+void Reader::normalization(int code) {
 	double max, min, rate;
-	bool counterUp,counterDown;
-	for (int i = 0; i < columns; i++) {
-		max = data[0][i];
-		min = data[0][i];
-		counterUp = true;
-		counterDown = true;
-		//judge
-		for (int j = 1, k = 0; j < rows; j++, k++) {
-			if (counterUp&&data[j][i] < data[k][i])counterUp = false;
-			if (counterDown&&data[j][i] > data[k][i])counterDown = false;
-			if (data[j][i] > max)max = data[j][i];
-			if (data[j][i] < min)min = data[j][i];
+	bool counterUp, counterDown;
+	int i, j, k;
+	ifstream fin;
+	ofstream fout;
+	switch (code) {
+	case 1://process by trained data
+		fin.open("norm.tmp");
+		for (i = 0; i < columns; i++) {
+			fin >> min >> rate;
+			if (rate == 0) {
+				for (j = 0; j < rows; j++)data[j][i] = 0;
+			}
+			else {
+				for (j = 0; j < rows; j++)data[j][i] = (data[j][i] - min) / rate;
+			}
 		}
-		
-		//process
-		//all same value
-		if (min == max||counterUp||counterDown) {
-			for (int j = 0; j < rows; j++)data[j][i] = 0;
+		fin.close();
+		break;
+	default://get data from train
+		fout.open("norm.tmp");// min rate min rate...
+		//if rate=0 no sense
+		for (i = 0; i < columns; i++) {
+			max = data[0][i];
+			min = data[0][i];
+			counterUp = true;
+			counterDown = true;
+			//judge
+			for (j = 1, k = 0; j < rows; j++, k++) {
+				if (counterUp&&data[j][i] < data[k][i])counterUp = false;
+				if (counterDown&&data[j][i] > data[k][i])counterDown = false;
+				if (data[j][i] > max)max = data[j][i];
+				if (data[j][i] < min)min = data[j][i];
+			}
+
+			//process
+			//all same value
+			if (min == max || counterUp || counterDown) {
+				fout << min << ' ' << 0 << ' ';
+				for (j = 0; j < rows; j++)data[j][i] = 0;
+			}
+			else {
+				rate = (max - min) / 2;
+				min += rate;
+				fout << min << ' ' << rate << ' ';
+				for (j = 0; j < rows; j++)data[j][i] = (data[j][i] - min) / rate;
+			}
 		}
-		else {
-			rate = (max - min) / 2;
-			min += rate;
-			for (int j = 0; j < rows; j++)data[j][i] = (data[j][i] - min) / rate;
-		}
+		fout.close();
+		break;
 	}
+
+
 }
 
 void Reader::writeFile(const char*t) {

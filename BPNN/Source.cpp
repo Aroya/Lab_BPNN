@@ -34,7 +34,7 @@ void main() {
 	BPNN bpnn(layers);
 	bpnn.setInputNodes(trainCols);
 	bpnn.setLayerNodes(layerNodes);
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 10000; i++) {
 		//bpnn.runGroup(trainData, trainFlag, train.rows, defaultActive, defaultActiveD);
 		bpnn.runGroup(trainData, trainFlag, train.rows, sigmoid, sigmoidD);
 	}
