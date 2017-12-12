@@ -24,9 +24,6 @@
     <ClCompile Include="lib\Divider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\LR.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\Reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\Divider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\LR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\Reader.h">
