@@ -1,6 +1,8 @@
 #ifndef AROYA_BPNN
 #define AROYA_BPNN
 
+//展示实验结果用
+//#define ShowAllNode
 
 double defaultActive(const double&t);
 double defaultActiveD(const double&t);
@@ -36,11 +38,9 @@ private:
 	double ***fixW;
 	//expect fixed value of bias
 	double **fixBias;
-	//learing rate
-	double rate;
 	//after update learn from the data
 	void learn(const int&groups);
-	double forward;
+	//double forward;
 
 	//统计
 	double loss;
@@ -63,9 +63,7 @@ public:
 	//run with group data
 	void runGroup(double**groupData, double**flag, const int&groups,
 		double(*)(const double&) = defaultActive, double(*)(const double&) = defaultActiveD,
-		bool writeFileTest=0);
-	//set learning rate
-	void setRate(const double&t) { rate = t; }
+		int writeFileTest=1);
 };
 
 

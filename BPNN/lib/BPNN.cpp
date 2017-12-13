@@ -30,7 +30,6 @@ BPNN::BPNN(const int&Layers) {
 	expected = new double*[Layers];
 	//inputs don't have W
 	layerW[0] = nullptr;
-	rate = 1;
 	for (int i = 0; i < Layers; i++)layerNodes[i] = 0;
 }
 void BPNN::setInputNodes(const int&Nodes) {
@@ -121,6 +120,9 @@ void BPNN::updateLayers(double(*active)(const double&)) {
 			layerData[i][k] = sum;
 			//if (i == layers - 1)system("pause");
 			activation[i][k] = active(sum);
+#ifdef  ShowAllNode//实验结果展示用
+			cout << "layer:" << i << "\tnode:" << k << "\tactivation:" << activation[i][k] << endl;
+#endif //  ShowAllNode
 		}
 	}
 	//最后一层
@@ -135,6 +137,9 @@ void BPNN::setExpectData(double* Data,double(*active)(const double&)) {
 	int j = layerNodes[i];
 	for (int k = 0; k < j; k++) {
 		expected[i][k] = Data[k] - activation[i][k];
+#ifdef ShowAllNode//展示实验结果
+		cout << "k:" << i << "\tnode:" << k << "\tdiff:" << expected[i][k] << endl;
+#endif // ShowAllNode
 	}
 }
 void BPNN::updateParameter(double(*activeD)(const double&)) {
@@ -154,7 +159,12 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 				biasDiff = 2.0 * expected[i][j] * lastLayerK* layerData[i][j];
 			}
 			else biasDiff = 2.0 * expected[i][j]*activeD(layerData[i][j]);
-			//cout << activation[i][j] << '\t' << activeD(layerData[i][j]) << endl;
+#ifdef ShowAllNode//展示实验结果
+			biasDiff = 2.0 * expected[i][j] * activeD(layerData[i][j]);
+			cout << "layer:" << i << "\tnode:" << j << "\tbiasDiff:" << biasDiff << endl;
+			cout << activation[i][j] << '\t' << activeD(layerData[i][j]) << endl;
+#endif // ShowAllNode
+
 			fixBias[i][j] += biasDiff;
 			//W_i & X_i
 			for (l = 0; l < nodesReader2; l++) {
@@ -164,6 +174,11 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 				//cout << fixW[i][j][l] << ' ' << expected[k][l] << endl;
 			}
 		}
+		//average expected before
+		for (l = 0; l < nodesReader2; l++) {
+			expected[k][l] /= i;
+		}
+
 		//learning W_i and bias
 		//after run all train
 		//this function process one train
@@ -171,28 +186,31 @@ void BPNN::updateParameter(double(*activeD)(const double&)) {
 }
 void BPNN::runGroup(double**group, double**flag,const int&groups,
 	double(*active)(const double&), double(*activeD)(const double&),
-	bool writeFile) {
-	if (!writeFile) {
+	int writeFile) {
+	if (writeFile) {
 		clearData();
 		loss = 0;
-		forward = 0;
+		//forward = 0;
 		for (int i = 0; i < groups; i++) {
 			setInputData(group[i],active);
-			//for (int d = 0; d < layerNodes[0]; d++) {
-			//	cout << layerData[0][d] << '\t' << activation[0][d] << endl;
-			//}
 			updateLayers(active);
 			setExpectData(flag[i], active);
-			updateParameter(activeD);
+			if(writeFile>0)updateParameter(activeD);
 			for (int j = 0; j < layerNodes[layers - 1]; j++) {
-				forward += flag[i][j] - layerData[layers - 1][j];
-				loss += pow(flag[i][j] - layerData[layers - 1][j], 2);
+				//forward += flag[i][j] - layerData[layers - 1][j];
+				loss += pow(flag[i][j] - activation[layers - 1][j], 2);
 			}
 		}
-		cout << loss / double(groups) << endl;
-		learn(groups);
+		
+		if (writeFile > 0) {//>0训练
+			cout << (loss /= double(groups)) << endl;
+			learn(groups);
+		}
+		else {//<0验证
+			cout<< ','<<(loss /= double(groups)) << endl;
+		}
 	}
-	else {
+	else {//==0测试
 		ofstream fout;
 		fout.open("result.file");
 		clearData();
@@ -200,7 +218,7 @@ void BPNN::runGroup(double**group, double**flag,const int&groups,
 			setInputData(group[i],active);
 			updateLayers(active);
 			for (int i = 0; i < layerNodes[layers - 1]; i++) {
-				fout << layerData[layers - 1][i] << endl;
+				fout << activation[layers - 1][i] << endl;
 			}
 		}
 		fout.close();
@@ -215,18 +233,37 @@ void BPNN::learn(const int&groups) {
 		for (k = 0; k < nodesReader; k++) {
 			//bias
 			bias[i][k] += (dynamicRate()*fixBias[i][k] / groups);
+#ifdef ShowAllNode//展示实验结果
+			cout << "layer:" << i << "\tnode:" << k << "\tfixBias:" <<
+				dynamicRate()*fixBias[i][k] / groups << endl;
+			cout << "fixedBias:" << bias[i][k] << endl;
+#endif // ShowAllNode
 			//W_i
 			for (l = 0; l < nodesReader2; l++) {
 				layerW[i][k][l] += (dynamicRate()*fixW[i][k][l] / groups);
+#ifdef ShowAllNode//展示实验结果
+				cout << "layer:" << i << "\tnode:" << k << "\tWi:" << l << "\tfixW:" << 
+					dynamicRate()*fixW[i][k][l] / groups << endl;
+				cout << "fixedWi:" << layerW[i][k][l] << endl;
+#endif
+				
+
 			}
 		}
 	}
 }
 double BPNN::dynamicRate() {
-	return 0.0001;
-	//if(forward>0)return 0.00005 / (1 + exp(-loss));
-	//else return -0.00005 / (1 + exp(-loss));
+#ifdef ShowAllNode//展示实验结果
+	return 0.1;
+#endif
 	
+	//if(forward>0)return 0.0001 / (1 + exp(-loss));
+	//else return -0.0001 / (1 + exp(-loss));
+	if (loss > 30000)return 0.0005;
+	else if (loss > 20000)return 0.0004;
+	else if (loss > 12500)return 0.0003;
+	else if (loss > 11000)return 0.0002;
+	else return 0.0001;
 	//return forward / 100;
 	//return 100;
 }
